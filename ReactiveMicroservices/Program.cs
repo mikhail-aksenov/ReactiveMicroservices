@@ -39,7 +39,7 @@ namespace ReactiveMicroservices
             sub.Dispose();
         }
 
-        static void RunTest(Action a, string testName)
+        static Tuple<long, long> RunTest(Action a, string testName)
         {
             counter = 0;
             Stopwatch sw = new Stopwatch();
@@ -51,8 +51,13 @@ namespace ReactiveMicroservices
             Process proc = Process.GetCurrentProcess();
             Console.WriteLine($"Test {testName} took {sw.ElapsedMilliseconds} ms, {counter} events has been generated");
             Console.WriteLine($"Consumed {proc.PrivateMemorySize64}");
+
+            var result = Tuple.Create(sw.ElapsedMilliseconds, proc.PrivateMemorySize64);
+
             proc.Dispose();
             GC.Collect();
+
+            return result;
         }
 
         static void ClassicBufferTest()
@@ -97,11 +102,17 @@ namespace ReactiveMicroservices
 
         static void Main(string[] args)
         {
-           // RunTest(ClassicCombineTest, "ClassicCombine");
-            //RunTest(ReactiveCombineTest, "ReactiveCombine");
-            RunTest(ClassicBufferTest, "Classic Buffer");
-            RunTest(ReactiveBufferTest, "Reactive Buffer");
-            
+            var cc = RunTest(ClassicCombineTest, "ClassicCombine");
+            var rc = RunTest(ReactiveCombineTest, "ReactiveCombine");
+            var cb = RunTest(ClassicBufferTest, "Classic Buffer");
+            var rb = RunTest(ReactiveBufferTest, "Reactive Buffer");
+
+            Console.WriteLine($"Combine Time: {(double)cc.Item1 / (double)rc.Item1}");
+            Console.WriteLine($"Combine Memory: {(double)cc.Item2 / (double)rc.Item2}");
+
+            Console.WriteLine($"Buffer Time: {(double)cc.Item1 / (double)rc.Item1}");
+            Console.WriteLine($"Buffer Memory: {(double)cb.Item2 / (double)rb.Item2}");
+
             Console.ReadKey();
         }
 
