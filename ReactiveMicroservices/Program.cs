@@ -2,13 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Reactive.Disposables;
 
 namespace ReactiveMicroservices
 {
@@ -75,19 +71,18 @@ namespace ReactiveMicroservices
             {
                 for (int i = 0; i < Iterations; i++)
                 {
-                    Task.Delay(5).Wait();
+                    Task.Delay(15).Wait();
                     buff.Put(rnd.Next());
                 }
             });
 
             buff.Stop();
-            buff.BufferEvent -= a;
         }
 
         static void ReactiveBufferTest()
         {
             var rnd = new Random();
-            var producer = Observable.Generate(0, i => i < 1000, i => i + 1, i => rnd.Next(), i => TimeSpan.FromMilliseconds(5));
+            var producer = Observable.Generate(0, i => i < 1000, i => i + 1, i => rnd.Next(), i => TimeSpan.FromMilliseconds(15));
 
             IDisposable bufferedConsumer = producer.Buffer(TimeSpan.FromMilliseconds(1000), 100)
                                                    .Subscribe(list =>
@@ -102,8 +97,8 @@ namespace ReactiveMicroservices
 
         static void Main(string[] args)
         {
-            RunTest(ClassicCombineTest, "ClassicCombine");
-            RunTest(ReactiveCombineTest, "ReactiveCombine");
+           // RunTest(ClassicCombineTest, "ClassicCombine");
+            //RunTest(ReactiveCombineTest, "ReactiveCombine");
             RunTest(ClassicBufferTest, "Classic Buffer");
             RunTest(ReactiveBufferTest, "Reactive Buffer");
             
